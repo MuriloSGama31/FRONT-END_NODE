@@ -1,40 +1,63 @@
+import {useEffect, useState, useRef} from 'react'
 import './style.css'
-import Fundo from '../../assets/fundo.jpg';
-import Lixeira from '../../assets/lixeira.png';
+import Fundo from '../../assets/fundo.jpg'
+import Lixeira from '../../assets/lixeira.png'
+import api from '../../services/api'
 
 function Home() {
-  const usuarios = [{
-    id: '7839202',
-    nome: 'Fulano Moura',
-    idade: 27,
-    email: 'fulanomoura@gmail.com'
-  }, {
-    id: '0152945',
-    nome: 'Carlos Freitas',
-    idade: 61,
-    email: 'freitascarlos@gmail.com'
-  }]
+  const [usuarios, setUsuarios] = useState([])
+  //let usuarios = []
+
+  const inputNome = useRef()
+  const inputEmail = useRef()
+  const inputIdade = useRef()
+
+  async function getUsuarios(){
+    const usuariosDaApi = await api.get('/cadastro')
+    //setUsuarios = usuariosDaApi.data
+    setUsuarios(usuarios = usuariosDaApi.data)
+    console.log(usuarios)
+  }
+
+  async function createUsuarios(){
+    await api.post('/cadastro',{
+      email: inputEmail.current.value,
+      nome: inputNome.current.value,
+      idade: inputIdade.current.value,
+    })
+    getUsuarios()
+  }
+
+  async function deleteUsuarios(id){
+    await api.delete(`/cadastro/${id}`)
+  }
+
+  useEffect(()=>{
+    getUsuarios()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[])
+
   return (
     <div className="container"
     style={{
       backgroundImage: `url(${Fundo})`, 
     }}>
       <form>
-        <h1>Olá Etec MCM</h1>
-        <input name="nome" type='text'/>
-        <input name="idade" type='number'/>
-        <input name="email" type='email'/>
-        <button type='button'>Cadastrar</button>
+        <h1>Cadastro de Usuários</h1>
+        <input placeholder='Digite seu nome' name="nome" type='text' ref={inputNome}/>
+        <input placeholder='Digite sua idade' name="idade" type='number' ref={inputIdade}/>
+        <input placeholder='Digite seu email' name="email" type='email' ref={inputEmail}/>
+        <button type='button' onClick={createUsuarios}>Cadastrar</button>
       </form>
 
       {usuarios.map(usuario => (
       <div key={usuario.id} className='card'>
         <div>
-          <p>Nome: {usuario.nome}</p>
-          <p>Idade: {usuario.idade}</p>
-          <p>Email: {usuario.email}</p>
+          <p>Nome: <span>{usuario.nome}</span></p>
+          <p>Idade: <span>{usuario.idade}</span></p>
+          <p>Email: <span>{usuario.email}</span></p>
         </div>
-        <button>
+        <button onClick={ ()=> deleteUsuarios(usuario.id)}>
           <img className='lixo' src={Lixeira}/>
         </button>
         </div>
